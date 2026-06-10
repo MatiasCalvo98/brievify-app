@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+:root {
+  /* Fondos */
+  --color-ink: #07090a;
+  --color-surface: #0d1410;
+  --color-surface-2: #131c15;
+  --color-surface-3: #192219;
+
+  /* Bordes */
+  --color-border: #1c2b1f;
+  --color-border-2: #253525;
+
+  /* Texto */
+  --color-text: #e8f0e9;
+  --color-text-2: #789878;
+  --color-muted: #456050;
+  --color-bright: #f5faf5;
+
+  /* Brand */
+  --color-lime: #b8ef35;
+  --color-lime-2: #8ab82a;
+  --color-lime-surf: #161f08;
+
+  /* Semánticos */
+  --color-coral: #ff5e40;
+  --color-emerald: #28d485;
+  --color-amber: #f5a623;
+}
+
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-surface-3: var(--color-surface-3);
+  --color-border: var(--color-border);
+  --color-border-2: var(--color-border-2);
+  --color-text: var(--color-text);
+  --color-text-2: var(--color-text-2);
+  --color-muted: var(--color-muted);
+  --color-bright: var(--color-bright);
+  --color-lime: var(--color-lime);
+  --color-lime-2: var(--color-lime-2);
+  --color-lime-surf: var(--color-lime-surf);
+  --color-coral: var(--color-coral);
+  --color-emerald: var(--color-emerald);
+  --color-amber: var(--color-amber);
+
+  --font-display: var(--font-instrument-serif), Georgia, serif;
+  --font-heading: var(--font-syne), system-ui, sans-serif;
+  --font-body: var(--font-barlow), system-ui, sans-serif;
+
+  --animate-fade-up: fade-up 0.7s ease-out both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+body {
+  background-color: var(--color-ink);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  position: relative;
+}
+
+/* Noise texture sutil sobre toda la app */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background-color: var(--color-lime);
+  color: var(--color-ink);
+}
+
+/* Scrollbar acorde al tema */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-2);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
