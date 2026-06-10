@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
+import { NavbarAuthSection } from "./NavbarAuthSection";
 
 const links = [
   { href: "#como-funciona", label: "Cómo funciona" },
@@ -25,17 +26,7 @@ export function Navbar() {
             </Link>
           ))}
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="hidden font-heading text-sm font-semibold text-text-2 transition-colors hover:text-text sm:block"
-          >
-            Iniciar sesión
-          </Link>
-          <Link href="/dashboard">
-            <Button size="sm">Empezar gratis</Button>
-          </Link>
-        </div>
+        <NavbarAuthSection />
       </nav>
     </header>
   );

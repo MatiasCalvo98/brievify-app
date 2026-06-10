@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserButton } from "@clerk/nextjs";
 import {
   Hammer,
   Palette,
@@ -29,12 +30,15 @@ export function Sidebar() {
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-surface">
       <div className="border-b border-border px-5 py-4">
         <Logo href="/dashboard" />
-        <p className="mt-2 truncate text-xs text-text-2">mi-tienda.myshopify.com</p>
+        <p className="mt-2 truncate text-xs text-text-2">
+          mi-tienda.myshopify.com
+        </p>
       </div>
 
       <nav className="flex flex-1 flex-col gap-y-1 p-3">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href.split("?")[0] && !href.includes("?");
+          const base = href.split("?")[0];
+          const active = pathname === base && !href.includes("?");
           return (
             <Link
               key={label}
@@ -56,13 +60,32 @@ export function Sidebar() {
       <div className="flex flex-col gap-y-3 border-t border-border p-4">
         <div className="flex items-center justify-between">
           <span className="text-xs text-text-2">Shopify</span>
-          <Badge variant="emerald">Conectada</Badge>
+          <Badge variant="amber">Sin conectar</Badge>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-xs text-text-2">Plan Starter</span>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-lime hover:text-lime">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-lime hover:text-lime"
+          >
             Upgrade
           </Button>
+        </div>
+        <div className="flex items-center gap-3 pt-1">
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: "size-7",
+                userButtonPopoverCard:
+                  "bg-surface border border-border shadow-none",
+                userButtonPopoverActionButton: "text-text hover:bg-surface-2",
+                userButtonPopoverActionButtonText: "text-text text-sm",
+                userButtonPopoverFooter: "hidden",
+              },
+            }}
+          />
+          <span className="text-xs text-text-2">Mi cuenta</span>
         </div>
       </div>
     </aside>
