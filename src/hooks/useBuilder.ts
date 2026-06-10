@@ -1,23 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import type { ChatMessage, GeneratedSection, SectionId } from "@/types";
-import { SECTION_LIBRARY } from "@/lib/sections/library";
+import { useCallback, useRef, useState } from "react";
+import type { ChatMessage, GeneratedSection } from "@/types";
 
 /**
- * Mock del flujo de generación (paso 6 del plan): el chat funciona y el
- * preview se actualiza en tiempo real, pero sin Claude todavía.
- * En el paso 8 este hook se reemplaza por el streaming real del Route Handler.
+ * Hook del builder (Fase 8): chat real con Claude vía /api/chat.
+ * Lee el stream NDJSON del route handler y actualiza los mensajes y el
+ * live preview en tiempo real, sección a sección.
  */
-
-const MOCK_HOME_SECTIONS: SectionId[] = [
-  "announcement-bar",
-  "hero-primary",
-  "trust-strip",
-  "product-grid",
-  "testimonials",
-  "cta-final",
-];
 
 let counter = 0;
 function uid(prefix: string) {
@@ -25,9 +15,14 @@ function uid(prefix: string) {
   return `${prefix}-${Date.now()}-${counter}`;
 }
 
-function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+type StreamEvent =
+  | { type: "text"; delta: string }
+  | { type: "section_ready"; section: GeneratedSection }
+  | { type: "section_updated"; section: GeneratedSection }
+  | { type: "sections_reordered"; orderedIds: string[] }
+  | { type: "page_started"; title: string; pageType: string }
+  | { type: "error"; message: string }
+  | { type: "done" };
 
 export function useBuilder() {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -35,16 +30,22 @@ export function useBuilder() {
       id: uid("msg"),
       role: "assistant",
       content:
-        "Tu brand kit está listo. ¿Querés que construya tu home desde cero o empezamos por una sección específica?",
+        'Hola, soy Brievify. Contame qué vendés y qué página querés construir — por ejemplo: "una home para mi tienda de ropa deportiva femenina, estilo minimal". La vas a ver crecer en el preview de la derecha.',
       timestamp: new Date().toISOString(),
     },
   ]);
   const [sections, setSections] = useState<GeneratedSection[]>([]);
   const [isBuilding, setIsBuilding] = useState(false);
 
+  const sectionsRef = useRef<GeneratedSection[]>([]);
+  sectionsRef.current = sections;
+  const messagesRef = useRef<ChatMessage[]>([]);
+  messagesRef.current = messages;
+
   const sendMessage = useCallback(
     async (content: string) => {
       if (isBuilding) return;
+      setIsBuilding(true);
 
       const userMessage: ChatMessage = {
         id: uid("msg"),
@@ -52,73 +53,128 @@ export function useBuilder() {
         content,
         timestamp: new Date().toISOString(),
       };
-      setMessages((prev) => [...prev, userMessage]);
-      setIsBuilding(true);
-
-      await wait(700);
-
       const assistantId = uid("msg");
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: assistantId,
-          role: "assistant",
-          content:
-            "Perfecto. Voy a construir tu home con las secciones que mejor convierten para tu tipo de tienda. Mirá el preview a la derecha — la vas a ver crecer sección a sección.",
-          sections: [],
-          timestamp: new Date().toISOString(),
-        },
-      ]);
+      const assistantMessage: ChatMessage = {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+        sections: [],
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, userMessage, assistantMessage]);
 
-      for (const sectionId of MOCK_HOME_SECTIONS) {
-        const definition = SECTION_LIBRARY[sectionId];
-        const instance: GeneratedSection = {
-          id: uid("sec"),
-          sectionId,
-          name: definition.name,
-          description: definition.croBuiltIn.split(",")[0],
-          status: "generating",
-          content: {},
+      const appendText = (delta: string) => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId ? { ...m, content: m.content + delta } : m
+          )
+        );
+      };
+
+      const attachSection = (section: GeneratedSection) => {
+        setMessages((prev) =>
+          prev.map((m) => {
+            if (m.id !== assistantId) return m;
+            const existing = m.sections ?? [];
+            const index = existing.findIndex((s) => s.id === section.id);
+            const next =
+              index === -1
+                ? [...existing, section]
+                : existing.map((s) => (s.id === section.id ? section : s));
+            return { ...m, sections: next };
+          })
+        );
+      };
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [...messagesRef.current, userMessage]
+              .filter((m) => m.content.trim().length > 0)
+              .map((m) => ({ role: m.role, content: m.content })),
+            sections: sectionsRef.current,
+          }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => null);
+          appendText(
+            data?.error === "missing_api_key"
+              ? "Todavía no puedo construir: falta configurar la ANTHROPIC_API_KEY en el archivo .env.local del proyecto. Agregala, reiniciá el servidor y seguimos."
+              : "Tuve un problema para procesar tu pedido. Probá de nuevo en un momento."
+          );
+          return;
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          appendText("No pude abrir la conexión de streaming. Probá de nuevo.");
+          return;
+        }
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        const processLine = (line: string) => {
+          if (!line.trim()) return;
+          let event: StreamEvent;
+          try {
+            event = JSON.parse(line) as StreamEvent;
+          } catch {
+            return;
+          }
+
+          switch (event.type) {
+            case "text":
+              appendText(event.delta);
+              break;
+            case "section_ready":
+              setSections((prev) => [...prev, event.section]);
+              attachSection(event.section);
+              break;
+            case "section_updated":
+              setSections((prev) =>
+                prev.map((s) => (s.id === event.section.id ? event.section : s))
+              );
+              attachSection(event.section);
+              break;
+            case "sections_reordered":
+              setSections((prev) => {
+                const byId = new Map(prev.map((s) => [s.id, s]));
+                return event.orderedIds
+                  .map((id) => byId.get(id))
+                  .filter((s): s is GeneratedSection => Boolean(s));
+              });
+              break;
+            case "error":
+              appendText(
+                "\n\nUps, algo falló mientras construía. Probá de nuevo o reformulá el pedido."
+              );
+              break;
+            case "page_started":
+            case "done":
+              break;
+          }
         };
 
-        setSections((prev) => [...prev, instance]);
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantId
-              ? { ...m, sections: [...(m.sections ?? []), instance] }
-              : m
-          )
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+          lines.forEach(processLine);
+        }
+        if (buffer) processLine(buffer);
+      } catch {
+        appendText(
+          "No pude conectarme al servidor. Verificá que esté corriendo y probá de nuevo."
         );
-
-        await wait(900);
-
-        const ready = { ...instance, status: "ready" as const };
-        setSections((prev) => prev.map((s) => (s.id === instance.id ? ready : s)));
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantId
-              ? {
-                  ...m,
-                  sections: (m.sections ?? []).map((s) =>
-                    s.id === instance.id ? ready : s
-                  ),
-                }
-              : m
-          )
-        );
+      } finally {
+        setIsBuilding(false);
       }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: uid("msg"),
-          role: "assistant",
-          content:
-            "Listo — tu home tiene 6 secciones con principios de conversión incorporados. ¿Querés ajustar algo o la publicamos a Shopify?",
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-      setIsBuilding(false);
     },
     [isBuilding]
   );

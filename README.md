@@ -22,12 +22,14 @@ Cubre los pasos 1, 2, 6 y 7 del plan de implementación del proyecto:
 - ✅ Setup: Next 15 + Tailwind v4 con el design system de Brievify
 - ✅ Landing page completa (hero con floating elements, problem, how it works, features bento, pricing, FAQ, CTA final, footer)
 - ✅ Dashboard shell: sidebar + split screen chat (40%) / live preview (60%)
-- ✅ Chat con **mock de generación**: las secciones aparecen en el preview en tiempo real (sin AI todavía)
+- ✅ Chat con Claude (claude-sonnet-4-6): streaming, tools build_section / update_section / reorder_sections / build_full_page
 - ✅ Librería de 12 secciones CRO (`src/lib/sections/library.ts`) + renderer JSON → HTML (`renderer.ts`)
-- ✅ Definiciones de tools para Claude y system prompt builder, listos para el paso 8
-- ⏳ Clerk, Supabase, Shopify OAuth, integración real de Claude, Mercado Pago
+- ✅ Integración real de Claude (Fase 8): route handler con streaming + tool use, el chat construye en el preview en tiempo real
+- ⏳ Clerk, Supabase, Shopify OAuth, Mercado Pago
 
 ## Desarrollo
+
+Para que el chat construya de verdad, configurá `ANTHROPIC_API_KEY` en `.env.local`.
 
 ```bash
 npm install
@@ -51,7 +53,7 @@ src/
     ai/             # tools.ts, system-prompt.ts, client.ts
     sections/       # library.ts (12 secciones CRO), renderer.ts
     shopify/ supabase/
-  hooks/            # useBuilder (mock del flujo de generación)
+  hooks/            # useBuilder (chat con streaming + estado del preview)
   types/
 supabase/schema.sql     # Schema de la base de datos
 ```
