@@ -100,7 +100,11 @@ function handleTool(
 }
 
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  console.log("[brievify] ANTHROPIC_API_KEY presente:", !!apiKey, "| longitud:", apiKey?.length ?? 0);
+  console.log("[brievify] Todas las vars:", Object.keys(process.env).filter(k => k.includes("ANTHROPIC") || k.includes("SUPABASE") || k.includes("CLERK")).join(", "));
+
+  if (!apiKey) {
     return Response.json(
       { error: "missing_api_key", message: "Falta ANTHROPIC_API_KEY en .env.local." },
       { status: 500 }
