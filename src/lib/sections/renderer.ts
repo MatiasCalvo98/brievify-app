@@ -15,6 +15,11 @@ const DEFAULT_BRAND: BrandTokens = {
 };
 
 function esc(value: unknown): string {
+  // Si Claude devuelve un objeto {text, label, icon, etc.}, extraer el texto
+  if (value && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    value = obj.text ?? obj.label ?? obj.name ?? obj.value ?? Object.values(obj).find(v => typeof v === "string") ?? "";
+  }
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -55,12 +60,23 @@ export function renderSection(
         </section>`;
 
     case "trust-strip": {
-      const items = (c.items as string[] | undefined) ?? [
+      const rawItems = (c.items as unknown[] | undefined) ?? [
         "✓ Garantía de devolución",
         "✓ Envío a todo el país",
         "✓ Pago seguro",
         "✓ Cuotas sin interés",
       ];
+      // Normalizar: Claude puede mandar strings, objetos {icon, text}, {label}, etc.
+      const items = rawItems.map((i) => {
+        if (typeof i === "string") return i;
+        if (i && typeof i === "object") {
+          const obj = i as Record<string, unknown>;
+          const text = obj.text ?? obj.label ?? obj.name ?? obj.value ?? "";
+          const icon = obj.icon ?? obj.emoji ?? "";
+          return icon ? `${icon} ${text}` : String(text);
+        }
+        return String(i ?? "");
+      });
       return `
         <section style="background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;padding:20px 24px;">
           <div style="display:flex;flex-wrap:wrap;gap:24px;justify-content:center;font-size:14px;color:${brand.primary};">
@@ -113,12 +129,21 @@ export function renderSection(
       return `<div style="background:${brand.accent};color:${brand.primary};text-align:center;padding:12px 16px;font-weight:700;font-size:14px;">${esc(c.text ?? "⏳ Últimas unidades — la oferta termina hoy")}</div>`;
 
     case "testimonials": {
-      const testimonials =
-        (c.testimonials as { name: string; quote: string }[] | undefined) ?? [
+      const rawTestimonials = (c.testimonials as unknown[] | undefined) ?? [
           { name: "María G. ✓", quote: "Llegó rapidísimo y la calidad superó lo que esperaba." },
           { name: "Lucas P. ✓", quote: "Tenía dudas con el talle y me asesoraron al toque. Compro de nuevo." },
           { name: "Sofía R. ✓", quote: "El proceso de devolución fue simple. Cero problemas." },
         ];
+      const testimonials = rawTestimonials.map((t) => {
+        if (typeof t === "object" && t !== null) {
+          const obj = t as Record<string, unknown>;
+          return {
+            name: String(obj.name ?? obj.author ?? obj.customer ?? "Cliente verificado"),
+            quote: String(obj.quote ?? obj.text ?? obj.review ?? obj.content ?? ""),
+          };
+        }
+        return { name: "Cliente", quote: String(t ?? "") };
+      });
       return `
         <section style="background:${brand.secondary};padding:64px 24px;">
           <h2 style="text-align:center;font-size:30px;margin:0 0 36px;color:${brand.primary};font-weight:800;">${esc(c.headline ?? "Lo que dicen nuestros clientes")}</h2>
@@ -137,12 +162,21 @@ export function renderSection(
     }
 
     case "faq-objections": {
-      const faqs =
-        (c.faqs as { q: string; a: string }[] | undefined) ?? [
+      const rawFaqs = (c.faqs as unknown[] | undefined) ?? [
           { q: "¿Cuánto tarda el envío?", a: "Entre 2 y 5 días hábiles a todo el país." },
           { q: "¿Puedo devolver el producto?", a: "Sí, tenés 30 días para cambios y devoluciones sin costo." },
           { q: "¿Qué medios de pago aceptan?", a: "Tarjetas, Mercado Pago y transferencia. Hasta 6 cuotas sin interés." },
         ];
+      const faqs = rawFaqs.map((f) => {
+        if (typeof f === "object" && f !== null) {
+          const obj = f as Record<string, unknown>;
+          return {
+            q: String(obj.q ?? obj.question ?? obj.pregunta ?? ""),
+            a: String(obj.a ?? obj.answer ?? obj.respuesta ?? obj.text ?? ""),
+          };
+        }
+        return { q: "", a: String(f ?? "") };
+      });
       return `
         <section style="background:#fff;padding:64px 24px;">
           <h2 style="text-align:center;font-size:30px;margin:0 0 32px;color:${brand.primary};font-weight:800;">${esc(c.headline ?? "Preguntas frecuentes")}</h2>
