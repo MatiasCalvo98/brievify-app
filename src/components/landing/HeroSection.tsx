@@ -93,7 +93,7 @@ export function HeroSection() {
         </p>
 
         <div className="mt-10 flex animate-fade-up items-center justify-center gap-5 [animation-delay:400ms]">
-          <Link href="/dashboard">
+          <Link href="/sign-up">
             <Button size="lg">Empezar gratis</Button>
           </Link>
           <Link

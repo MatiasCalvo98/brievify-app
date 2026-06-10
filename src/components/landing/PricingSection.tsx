@@ -81,7 +81,7 @@ export function PricingSection() {
                 </li>
               ))}
             </ul>
-            <Link href="/dashboard" className="mt-8 block">
+            <Link href="/sign-up" className="mt-8 block">
               <Button
                 variant={plan.highlighted ? "primary" : "secondary"}
                 className="w-full"

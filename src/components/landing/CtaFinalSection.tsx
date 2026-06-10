@@ -23,7 +23,7 @@ export function CtaFinalSection() {
           sin compromiso.
         </p>
         <div className="relative mt-8">
-          <Link href="/dashboard">
+          <Link href="/sign-up">
             <Button size="lg">Empezar gratis</Button>
           </Link>
         </div>

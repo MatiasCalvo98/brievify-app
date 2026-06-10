@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/Button";
 
 const userButtonAppearance = {
@@ -17,7 +17,6 @@ const userButtonAppearance = {
 export function NavbarAuthSection() {
   const { isSignedIn, isLoaded } = useUser();
 
-  // Mientras Clerk carga, mostrar placeholder del mismo ancho
   if (!isLoaded) {
     return <div className="h-8 w-32 rounded-lg bg-surface-2 animate-pulse" />;
   }
@@ -35,14 +34,15 @@ export function NavbarAuthSection() {
 
   return (
     <div className="flex items-center gap-3">
-      <SignInButton mode="redirect">
-        <button className="hidden cursor-pointer font-heading text-sm font-semibold text-text-2 transition-colors hover:text-text sm:block">
-          Iniciar sesión
-        </button>
-      </SignInButton>
-      <SignUpButton mode="redirect">
+      <Link
+        href="/sign-in"
+        className="hidden cursor-pointer font-heading text-sm font-semibold text-text-2 transition-colors hover:text-text sm:block"
+      >
+        Iniciar sesión
+      </Link>
+      <Link href="/sign-up">
         <Button size="sm">Empezar gratis</Button>
-      </SignUpButton>
+      </Link>
     </div>
   );
 }
