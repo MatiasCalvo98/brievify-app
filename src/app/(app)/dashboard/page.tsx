@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useBuilder } from "@/hooks/useBuilder";
 import { useBrandKit } from "@/hooks/useBrandKit";
 import { brandKitToTokens } from "@/lib/sections/brand-tokens";
+import { visualStyleToThemeId, type ThemeId } from "@/lib/sections/style-themes";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { LivePreview } from "@/components/builder/LivePreview";
@@ -18,6 +19,14 @@ export default function DashboardPage() {
   const { brandKit, isLoading } = useBrandKit();
   const brandTokens = brandKitToTokens(brandKit);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Tema visual del builder, inicializado desde el brand kit
+  const [themeId, setThemeId] = useState<ThemeId | null>(null);
+  useEffect(() => {
+    if (brandKit && themeId === null) {
+      setThemeId(visualStyleToThemeId(brandKit.visualStyle));
+    }
+  }, [brandKit, themeId]);
 
   // Gate de onboarding: si no hay brand kit, mandar a /onboarding
   useEffect(() => {
@@ -34,7 +43,7 @@ export default function DashboardPage() {
   }, [messages]);
 
   // Mientras carga el brand kit o redirige, mostrar loader
-  if (isLoading || !brandKit) {
+  if (isLoading || !brandKit || themeId === null) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 size={22} className="animate-spin text-text-2" />
@@ -81,6 +90,8 @@ export default function DashboardPage() {
           sections={sections}
           isBuilding={isBuilding}
           brand={brandTokens}
+          themeId={themeId}
+          onThemeChange={setThemeId}
           onSaveDraft={saveDraft}
           saveState={saveState}
         />
