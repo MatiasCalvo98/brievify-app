@@ -68,14 +68,14 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-ink">
-      <div className="mx-auto max-w-3xl px-6 py-10">
+    <div className="min-h-screen bg-ink">
+      <div className="mx-auto max-w-3xl px-6 py-8 pb-16">
         <div className="flex justify-center">
           <Logo href="/" />
         </div>
 
         {/* Stepper */}
-        <div className="mt-10 flex items-center justify-center gap-2">
+        <div className="mt-8 flex items-center justify-center gap-2">
           {STEPS.map((s, i) => (
             <div key={s.n} className="flex items-center gap-2">
               <div

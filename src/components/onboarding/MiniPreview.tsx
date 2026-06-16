@@ -112,6 +112,18 @@ export function MiniPreview({ state, styleOverride, compact }: MiniPreviewProps)
           textAlign: "center",
         }}
       >
+        {state.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={state.logoUrl}
+            alt={name}
+            style={{
+              height: compact ? "22px" : "36px",
+              margin: "0 auto 10px",
+              objectFit: "contain",
+            }}
+          />
+        ) : null}
         <h2
           style={{
             color: state.colorPrimary,

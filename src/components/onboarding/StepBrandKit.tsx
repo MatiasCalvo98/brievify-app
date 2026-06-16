@@ -3,6 +3,7 @@
 import type { OnboardingState } from "./types";
 import { toneLabel } from "./types";
 import { MiniPreview } from "./MiniPreview";
+import { LogoUpload } from "./LogoUpload";
 
 interface StepBrandKitProps {
   state: OnboardingState;
@@ -93,6 +94,11 @@ export function StepBrandKit({ state, update }: StepBrandKitProps) {
           placeholder="Ej: iFusion"
           value={state.brandName}
           onChange={(v) => update({ brandName: v })}
+        />
+
+        <LogoUpload
+          logoUrl={state.logoUrl}
+          onChange={(url) => update({ logoUrl: url })}
         />
 
         <div className="flex gap-3">
