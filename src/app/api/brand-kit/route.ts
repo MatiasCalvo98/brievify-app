@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rowToBrandKit } from "@/lib/brand-kit-mapper";
 
 /**
  * GET  /api/brand-kit  → devuelve el brand kit del usuario autenticado
@@ -30,8 +31,8 @@ export async function GET() {
     .eq("user_id", profileId)
     .single();
 
-  if (error) return Response.json({ data: null });
-  return Response.json({ data });
+  if (error || !data) return Response.json({ data: null });
+  return Response.json({ data: rowToBrandKit(data) });
 }
 
 export async function POST(req: Request) {
@@ -75,6 +76,6 @@ export async function POST(req: Request) {
     .select()
     .single();
 
-  if (error) return Response.json({ error: error.message }, { status: 500 });
-  return Response.json({ data });
+  if (error || !data) return Response.json({ error: error?.message ?? "Error al guardar" }, { status: 500 });
+  return Response.json({ data: rowToBrandKit(data) });
 }
