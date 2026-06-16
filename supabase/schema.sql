@@ -29,7 +29,7 @@ create policy "update own profile"
 -- ── brand_kits ───────────────────────────────────────────────
 create table if not exists brand_kits (
   id                   uuid primary key default gen_random_uuid(),
-  user_id              uuid references profiles(id) on delete cascade not null,
+  user_id              uuid references profiles(id) on delete cascade not null unique,
   brand_name           text,
   logo_url             text,
   color_primary        text default '#1a1a1a',
