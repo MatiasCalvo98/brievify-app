@@ -34,6 +34,7 @@ export function renderSection(
     case "hero-primary":
       return `
         <section style="background:${brand.secondary};padding:96px 24px;text-align:center;">
+          ${brand.logoUrl ? `<img src="${esc(brand.logoUrl)}" alt="${esc(brand.brandName)}" style="height:56px;max-width:240px;object-fit:contain;margin:0 auto 28px;display:block;" />` : ""}
           <h1 style="font-size:clamp(32px,5vw,56px);margin:0 0 16px;color:${brand.primary};line-height:1.1;font-weight:800;">${esc(c.headline ?? `Bienvenido a ${brand.brandName}`)}</h1>
           <p style="font-size:18px;color:${brand.primary}cc;max-width:560px;margin:0 auto 32px;">${esc(c.subheadline ?? "Productos pensados para vos.")}</p>
           <a href="#" style="display:inline-block;background:${brand.accent};color:${brand.primary};padding:14px 36px;border-radius:8px;font-weight:700;text-decoration:none;">${esc(c.cta ?? "Comprar ahora")}</a>

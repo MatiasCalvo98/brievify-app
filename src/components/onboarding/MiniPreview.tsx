@@ -118,8 +118,9 @@ export function MiniPreview({ state, styleOverride, compact }: MiniPreviewProps)
             src={state.logoUrl}
             alt={name}
             style={{
-              height: compact ? "22px" : "36px",
-              margin: "0 auto 10px",
+              height: compact ? "34px" : "60px",
+              maxWidth: compact ? "130px" : "220px",
+              margin: "0 auto 14px",
               objectFit: "contain",
             }}
           />
