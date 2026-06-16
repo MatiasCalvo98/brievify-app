@@ -13,7 +13,13 @@ interface PreviewFrameProps {
 }
 
 export function PreviewFrame({ sections, mode, brand = DEFAULT_BRAND_TOKENS }: PreviewFrameProps) {
-  const html = useMemo(() => renderPage(sections, brand), [sections, brand]);
+  const html = useMemo(
+    () =>
+      renderPage(sections, brand, {
+        visualStyle: brand.visualStyle ?? "minimal",
+      }),
+    [sections, brand]
+  );
   const hasContent = sections.some((s) => s.status === "ready");
 
   return (

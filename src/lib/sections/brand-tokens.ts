@@ -1,4 +1,4 @@
-import type { BrandKit } from "@/types";
+import type { BrandKit, VisualStyle } from "@/types";
 
 export interface BrandTokens {
   primary: string;
@@ -6,6 +6,7 @@ export interface BrandTokens {
   accent: string;
   brandName: string;
   logoUrl?: string | null;
+  visualStyle?: VisualStyle;
 }
 
 export const DEFAULT_BRAND_TOKENS: BrandTokens = {
@@ -27,5 +28,6 @@ export function brandKitToTokens(brandKit: BrandKit | null): BrandTokens {
     accent: brandKit.colorAccent || DEFAULT_BRAND_TOKENS.accent,
     brandName: brandKit.brandName || DEFAULT_BRAND_TOKENS.brandName,
     logoUrl: brandKit.logoUrl ?? null,
+    visualStyle: brandKit.visualStyle ?? "minimal",
   };
 }
