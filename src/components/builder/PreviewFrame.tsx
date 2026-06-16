@@ -3,15 +3,17 @@
 import { useMemo } from "react";
 import type { GeneratedSection } from "@/types";
 import { renderPage } from "@/lib/sections/renderer";
+import { type BrandTokens, DEFAULT_BRAND_TOKENS } from "@/lib/sections/brand-tokens";
 import { cn } from "@/lib/utils";
 
 interface PreviewFrameProps {
   sections: GeneratedSection[];
   mode: "desktop" | "mobile";
+  brand?: BrandTokens;
 }
 
-export function PreviewFrame({ sections, mode }: PreviewFrameProps) {
-  const html = useMemo(() => renderPage(sections), [sections]);
+export function PreviewFrame({ sections, mode, brand = DEFAULT_BRAND_TOKENS }: PreviewFrameProps) {
+  const html = useMemo(() => renderPage(sections, brand), [sections, brand]);
   const hasContent = sections.some((s) => s.status === "ready");
 
   return (

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Monitor, Smartphone } from "lucide-react";
 import type { GeneratedSection } from "@/types";
 import { PreviewFrame } from "./PreviewFrame";
+import type { BrandTokens } from "@/lib/sections/brand-tokens";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
@@ -11,9 +12,10 @@ import { cn } from "@/lib/utils";
 interface LivePreviewProps {
   sections: GeneratedSection[];
   isBuilding: boolean;
+  brand?: BrandTokens;
 }
 
-export function LivePreview({ sections, isBuilding }: LivePreviewProps) {
+export function LivePreview({ sections, isBuilding, brand }: LivePreviewProps) {
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
   const readyCount = sections.filter((s) => s.status === "ready").length;
 
@@ -55,7 +57,7 @@ export function LivePreview({ sections, isBuilding }: LivePreviewProps) {
       </div>
 
       <div className="min-h-0 flex-1">
-        <PreviewFrame sections={sections} mode={mode} />
+        <PreviewFrame sections={sections} mode={mode} brand={brand} />
       </div>
 
       <div className="flex items-center justify-end gap-3 border-t border-border px-4 py-3">

@@ -1,18 +1,7 @@
 import type { GeneratedSection } from "@/types";
+import { type BrandTokens, DEFAULT_BRAND_TOKENS } from "./brand-tokens";
 
-interface BrandTokens {
-  primary: string;
-  secondary: string;
-  accent: string;
-  brandName: string;
-}
-
-const DEFAULT_BRAND: BrandTokens = {
-  primary: "#1a1a1a",
-  secondary: "#f5f2ec",
-  accent: "#b8ef35",
-  brandName: "Tu Marca",
-};
+const DEFAULT_BRAND = DEFAULT_BRAND_TOKENS;
 
 function esc(value: unknown): string {
   // Si Claude devuelve un objeto {text, label, icon, etc.}, extraer el texto
