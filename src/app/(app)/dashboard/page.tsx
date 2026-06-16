@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { messages, sections, isBuilding, sendMessage, discardChanges } =
+  const { messages, sections, isBuilding, sendMessage, discardChanges, saveDraft, saveState } =
     useBuilder();
   const { brandKit, isLoading } = useBrandKit();
   const brandTokens = brandKitToTokens(brandKit);
@@ -77,7 +77,13 @@ export default function DashboardPage() {
 
       {/* Live preview — 60% (en mobile se oculta; v1 desktop-first) */}
       <div className="hidden flex-1 lg:block">
-        <LivePreview sections={sections} isBuilding={isBuilding} brand={brandTokens} />
+        <LivePreview
+          sections={sections}
+          isBuilding={isBuilding}
+          brand={brandTokens}
+          onSaveDraft={saveDraft}
+          saveState={saveState}
+        />
       </div>
     </div>
   );

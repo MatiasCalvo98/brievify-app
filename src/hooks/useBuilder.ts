@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChatMessage, GeneratedSection } from "@/types";
 
 /**
@@ -36,11 +36,15 @@ export function useBuilder() {
   ]);
   const [sections, setSections] = useState<GeneratedSection[]>([]);
   const [isBuilding, setIsBuilding] = useState(false);
+  const [pageId, setPageId] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
 
   const sectionsRef = useRef<GeneratedSection[]>([]);
   sectionsRef.current = sections;
   const messagesRef = useRef<ChatMessage[]>([]);
   messagesRef.current = messages;
+  const pageIdRef = useRef<string | null>(null);
+  pageIdRef.current = pageId;
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -181,6 +185,7 @@ export function useBuilder() {
 
   const discardChanges = useCallback(() => {
     setSections([]);
+    setPageId(null);
     setMessages((prev) => [
       ...prev,
       {
@@ -193,5 +198,67 @@ export function useBuilder() {
     ]);
   }, []);
 
-  return { messages, sections, isBuilding, sendMessage, discardChanges };
+  // Guardar el borrador actual en Supabase
+  const saveDraft = useCallback(async (): Promise<boolean> => {
+    if (sectionsRef.current.length === 0) return false;
+    setSaveState("saving");
+    try {
+      const res = await fetch("/api/pages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: pageIdRef.current,
+          page_type: "home",
+          title: "Mi home",
+          sections: sectionsRef.current,
+          status: "draft",
+        }),
+      });
+      const json = await res.json();
+      if (json.data?.id) {
+        setPageId(json.data.id);
+        setSaveState("saved");
+        setTimeout(() => setSaveState("idle"), 2500);
+        return true;
+      }
+      setSaveState("idle");
+      return false;
+    } catch {
+      setSaveState("idle");
+      return false;
+    }
+  }, []);
+
+  // Restaurar el último borrador al montar el builder
+  useEffect(() => {
+    fetch("/api/pages?draft=1")
+      .then((r) => r.json())
+      .then(({ data }) => {
+        if (data?.sections && Array.isArray(data.sections) && data.sections.length > 0) {
+          setSections(data.sections);
+          setPageId(data.id);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: uid("msg"),
+              role: "assistant",
+              content:
+                "Recuperé tu último borrador. Podés seguir donde lo dejaste o pedirme cambios.",
+              timestamp: new Date().toISOString(),
+            },
+          ]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  return {
+    messages,
+    sections,
+    isBuilding,
+    sendMessage,
+    discardChanges,
+    saveDraft,
+    saveState,
+  };
 }

@@ -13,9 +13,17 @@ interface LivePreviewProps {
   sections: GeneratedSection[];
   isBuilding: boolean;
   brand?: BrandTokens;
+  onSaveDraft?: () => void;
+  saveState?: "idle" | "saving" | "saved";
 }
 
-export function LivePreview({ sections, isBuilding, brand }: LivePreviewProps) {
+export function LivePreview({
+  sections,
+  isBuilding,
+  brand,
+  onSaveDraft,
+  saveState = "idle",
+}: LivePreviewProps) {
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
   const readyCount = sections.filter((s) => s.status === "ready").length;
 
@@ -61,8 +69,17 @@ export function LivePreview({ sections, isBuilding, brand }: LivePreviewProps) {
       </div>
 
       <div className="flex items-center justify-end gap-3 border-t border-border px-4 py-3">
-        <Button variant="ghost" size="sm" disabled={readyCount === 0}>
-          Guardar borrador
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={readyCount === 0 || saveState === "saving"}
+          onClick={onSaveDraft}
+        >
+          {saveState === "saving"
+            ? "Guardando…"
+            : saveState === "saved"
+              ? "✓ Guardado"
+              : "Guardar borrador"}
         </Button>
         <Button size="sm" disabled={readyCount === 0 || isBuilding}>
           Publicar a Shopify
