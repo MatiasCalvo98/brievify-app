@@ -27,14 +27,14 @@ function ColorField({
       <div className="flex items-center gap-2 rounded-lg border border-border bg-ink px-2 py-1.5">
         <input
           type="color"
-          value={value}
+          value={value || "#000000"}
           onChange={(e) => onChange(e.target.value)}
           className="size-7 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
           style={{ appearance: "none" }}
         />
         <input
           type="text"
-          value={value}
+          value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           className="w-full bg-transparent font-mono text-xs text-text outline-none"
         />

@@ -62,18 +62,22 @@ export default function BrandKitPage() {
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
-    const ok = await save({
-      brandName: state.brandName,
-      logoUrl: state.logoUrl,
-      colorPrimary: state.colorPrimary,
-      colorSecondary: state.colorSecondary,
-      colorAccent: state.colorAccent,
-      businessDescription: composeBusinessDescription(state),
-      tone: state.tone,
-      visualStyle: state.visualStyle ?? "minimal",
-    } as never);
+    const res = await fetch("/api/brand-kit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        brand_name: state.brandName,
+        logo_url: state.logoUrl,
+        color_primary: state.colorPrimary,
+        color_secondary: state.colorSecondary,
+        color_accent: state.colorAccent,
+        business_description: composeBusinessDescription(state),
+        tone: state.tone,
+        visual_style: state.visualStyle ?? "minimal",
+      }),
+    });
     setSaving(false);
-    if (ok) {
+    if (res.ok) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     }
