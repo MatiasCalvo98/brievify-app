@@ -7,37 +7,51 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * lo sube al bucket brand-assets de Supabase Storage y devuelve la URL pública.
  */
 export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) return Response.json({ error: "No autenticado" }, { status: 401 });
+  try {
+    const { userId } = await auth();
+    if (!userId) return Response.json({ error: "No autenticado" }, { status: 401 });
 
-  const formData = await req.formData();
-  const file = formData.get("file") as File | null;
-  if (!file) return Response.json({ error: "No se envió archivo" }, { status: 400 });
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
+    if (!file) return Response.json({ error: "No se envió archivo" }, { status: 400 });
 
-  // Validaciones básicas
-  if (!file.type.startsWith("image/")) {
-    return Response.json({ error: "El archivo debe ser una imagen" }, { status: 400 });
+    // Validaciones básicas
+    if (!file.type.startsWith("image/")) {
+      return Response.json({ error: "El archivo debe ser una imagen" }, { status: 400 });
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      return Response.json({ error: "La imagen no puede superar 2MB" }, { status: 400 });
+    }
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("[upload-logo] Faltan variables de Supabase");
+      return Response.json({ error: "Supabase no configurado" }, { status: 500 });
+    }
+
+    const supabase = createAdminClient();
+    const ext = file.name.split(".").pop() ?? "png";
+    const path = `${userId}/logo-${Date.now()}.${ext}`;
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    const { error } = await supabase.storage
+      .from("brand-assets")
+      .upload(path, buffer, {
+        contentType: file.type,
+        upsert: true,
+      });
+
+    if (error) {
+      console.error("[upload-logo] Error de Supabase Storage:", JSON.stringify(error, null, 2));
+      return Response.json({ error: error.message }, { status: 500 });
+    }
+
+    const { data } = supabase.storage.from("brand-assets").getPublicUrl(path);
+    return Response.json({ url: data.publicUrl });
+  } catch (e) {
+    console.error("[upload-logo] Excepción:", e);
+    return Response.json(
+      { error: e instanceof Error ? e.message : "Error desconocido" },
+      { status: 500 }
+    );
   }
-  if (file.size > 2 * 1024 * 1024) {
-    return Response.json({ error: "La imagen no puede superar 2MB" }, { status: 400 });
-  }
-
-  const supabase = createAdminClient();
-  const ext = file.name.split(".").pop() ?? "png";
-  const path = `${userId}/logo-${Date.now()}.${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  const { error } = await supabase.storage
-    .from("brand-assets")
-    .upload(path, buffer, {
-      contentType: file.type,
-      upsert: true,
-    });
-
-  if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
-  }
-
-  const { data } = supabase.storage.from("brand-assets").getPublicUrl(path);
-  return Response.json({ url: data.publicUrl });
 }
