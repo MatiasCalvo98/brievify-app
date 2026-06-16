@@ -128,7 +128,7 @@ const THEMES: Record<ThemeId, StyleTheme> = {
     buttonRadius: "14px",
     buttonStyle: (b) =>
       `background:${b.accent};color:${b.primary};font-weight:700;box-shadow:0 8px 24px ${alpha(b.accent, 0.4)};backdrop-filter:blur(4px);`,
-    buttonHover: "transform:translateY(-2px);",
+    buttonHover: "transform:translateY(-3px) scale(1.02);box-shadow:0 14px 40px var(--bv-glow);",
     badgeStyle: (b) =>
       `background:rgba(255,255,255,0.6);color:${b.primary};backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.7);`,
     heroPadding: "120px 24px",
@@ -136,6 +136,8 @@ const THEMES: Record<ThemeId, StyleTheme> = {
     globalCss: `
       section { position: relative; }
       .bv-card { backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); }
+      .bv-card:hover { transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.16); }
+      .bv-product:hover { transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.16); }
     `,
   },
 
@@ -166,14 +168,14 @@ const THEMES: Record<ThemeId, StyleTheme> = {
     buttonRadius: "0px",
     buttonStyle: (b) =>
       `background:${b.primary};color:#fff;font-weight:700;border:3px solid #000;box-shadow:5px 5px 0 #000;text-transform:uppercase;letter-spacing:0.04em;`,
-    buttonHover: "transform:translate(2px,2px);box-shadow:2px 2px 0 #000;",
+    buttonHover: "transform:translate(3px,3px);box-shadow:1px 1px 0 #000;",
     badgeStyle: (b) =>
       `background:${b.primary};color:#fff;border:2px solid #000;font-weight:700;text-transform:uppercase;`,
     heroPadding: "100px 24px",
     sectionPadding: "72px 24px",
     globalCss: `
-      .bv-card { transition: transform 0.1s, box-shadow 0.1s; }
-      a:hover { transform: translate(2px,2px); }
+      .bv-card:hover, .bv-product:hover { transform: translate(-3px,-3px); box-shadow: 11px 11px 0 #000; }
+      .bv-product:hover .bv-product-cta { background: var(--bv-accent); }
     `,
   },
 
@@ -206,14 +208,13 @@ const THEMES: Record<ThemeId, StyleTheme> = {
     buttonRadius: "999px",
     buttonStyle: (b) =>
       `background:${b.accent};color:${b.primary};font-weight:700;border-radius:999px;box-shadow:0 10px 30px ${alpha(b.accent, 0.35)};`,
-    buttonHover: "transform:translateY(-2px);box-shadow:0 14px 36px rgba(0,0,0,0.12);",
+    buttonHover: "transform:translateY(-3px) scale(1.03);box-shadow:0 18px 44px rgba(0,0,0,0.14);",
     badgeStyle: (b) =>
       `background:${alpha(b.accent, 0.18)};color:${b.primary};border-radius:999px;font-weight:700;`,
     heroPadding: "108px 24px",
     sectionPadding: "84px 24px",
     globalCss: `
-      .bv-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-      .bv-card:hover { transform: translateY(-4px); }
+      .bv-card:hover, .bv-product:hover { transform: translateY(-8px); box-shadow: 0 32px 70px rgba(0,0,0,0.12); }
     `,
   },
 
@@ -244,14 +245,15 @@ const THEMES: Record<ThemeId, StyleTheme> = {
     buttonRadius: "0px",
     buttonStyle: (b) =>
       `background:${b.primary};color:#fff;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;font-size:12px;border-bottom:2px solid ${b.accent};`,
-    buttonHover: "letter-spacing:0.18em;",
+    buttonHover: "letter-spacing:0.22em;background:var(--bv-accent);color:var(--bv-primary);",
     badgeStyle: (b) =>
       `background:transparent;color:${b.primary};border:1px solid ${b.primary};font-style:italic;letter-spacing:0.05em;`,
     heroPadding: "120px 24px",
     sectionPadding: "96px 24px",
     globalCss: `
       h1, h2 { font-optical-sizing: auto; }
-      a { transition: letter-spacing 0.3s; }
+      .bv-product:hover .bv-product-img { transform: scale(1.06); }
+      .bv-product:hover { box-shadow: 0 1px 0 var(--bv-primary); }
     `,
   },
 
@@ -284,15 +286,16 @@ const THEMES: Record<ThemeId, StyleTheme> = {
     buttonRadius: "8px",
     buttonStyle: (b) =>
       `background:${b.accent};color:#0a0a0f;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;box-shadow:0 0 24px ${alpha(b.accent, 0.6)},0 0 8px ${alpha(b.accent, 0.4)};`,
-    buttonHover: `box-shadow:0 0 40px var(--bv-glow);transform:translateY(-1px);`,
+    buttonHover: `box-shadow:0 0 50px var(--bv-glow),0 0 18px var(--bv-glow);transform:translateY(-2px);`,
     badgeStyle: (b) =>
       `background:transparent;color:${b.accent};border:1px solid ${b.accent};text-transform:uppercase;box-shadow:0 0 12px ${alpha(b.accent, 0.4)};`,
     heroPadding: "120px 24px",
     sectionPadding: "88px 24px",
     globalCss: `
-      .bv-card { transition: border-color 0.3s, box-shadow 0.3s; }
-      .bv-card:hover { border-color: var(--bv-accent); box-shadow: 0 0 30px var(--bv-glow); }
+      .bv-card:hover, .bv-product:hover { border-color: var(--bv-accent); box-shadow: 0 0 36px var(--bv-glow); transform: translateY(-4px); }
       h1, h2 { text-shadow: 0 0 30px var(--bv-glow); }
+      .bv-btn { animation: bv-neon-pulse 2.6s ease-in-out infinite; }
+      @keyframes bv-neon-pulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.12); } }
     `,
   },
 
@@ -325,15 +328,14 @@ const THEMES: Record<ThemeId, StyleTheme> = {
     buttonRadius: "999px",
     buttonStyle: (b) =>
       `background:${b.accent};color:${b.primary};font-weight:700;border-radius:999px;box-shadow:0 8px 24px ${alpha(b.accent, 0.32)};`,
-    buttonHover: "transform:scale(1.04);",
+    buttonHover: "transform:scale(1.06) translateY(-2px);box-shadow:0 14px 34px var(--bv-glow);",
     badgeStyle: (b) =>
       `background:${alpha(b.accent, 0.2)};color:${b.primary};border-radius:999px;font-weight:700;`,
     heroPadding: "108px 24px",
     sectionPadding: "84px 24px",
     globalCss: `
-      .bv-card { border-radius: 32px; transition: transform 0.3s; }
-      .bv-card:hover { transform: translateY(-3px) rotate(-0.5deg); }
-      a { transition: transform 0.2s; }
+      .bv-card, .bv-product { border-radius: 32px; }
+      .bv-card:hover, .bv-product:hover { transform: translateY(-5px) rotate(-0.6deg); box-shadow: 0 26px 56px rgba(0,0,0,0.09); }
     `,
   },
 
@@ -365,15 +367,14 @@ const THEMES: Record<ThemeId, StyleTheme> = {
     buttonRadius: "0px",
     buttonStyle: () =>
       `background:transparent;color:#d4af37;font-weight:400;letter-spacing:0.18em;text-transform:uppercase;font-size:12px;border:1px solid #d4af37;`,
-    buttonHover: "background:#d4af37;color:#0c0c0c;",
+    buttonHover: "background:#d4af37;color:#0c0c0c;letter-spacing:0.24em;",
     badgeStyle: () =>
       `background:transparent;color:#d4af37;border:1px solid rgba(212,175,55,0.4);letter-spacing:0.1em;text-transform:uppercase;`,
     heroPadding: "140px 24px",
     sectionPadding: "104px 24px",
     globalCss: `
-      a { transition: background 0.4s, color 0.4s; }
-      .bv-card { transition: border-color 0.4s; }
-      .bv-card:hover { border-color: rgba(212,175,55,0.5); }
+      .bv-card:hover, .bv-product:hover { border-color: rgba(212,175,55,0.6); }
+      .bv-product:hover .bv-product-img { transform: scale(1.05); }
     `,
   },
 
@@ -405,14 +406,13 @@ const THEMES: Record<ThemeId, StyleTheme> = {
     buttonRadius: "12px",
     buttonStyle: (b) =>
       `background:${b.primary};color:#fff;font-weight:800;box-shadow:4px 4px 0 ${b.accent};`,
-    buttonHover: "transform:translate(2px,2px);box-shadow:2px 2px 0 var(--bv-accent);",
+    buttonHover: "transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--bv-accent);",
     badgeStyle: (b) =>
       `background:${b.accent};color:${b.primary};font-weight:800;border-radius:8px;`,
     heroPadding: "104px 24px",
     sectionPadding: "80px 24px",
     globalCss: `
-      .bv-card { transition: transform 0.15s, box-shadow 0.15s; }
-      a:hover { transform: translate(2px,2px); }
+      .bv-card:hover, .bv-product:hover { transform: translate(-3px,-3px); box-shadow: 9px 9px 0 var(--bv-accent); }
     `,
   },
 };

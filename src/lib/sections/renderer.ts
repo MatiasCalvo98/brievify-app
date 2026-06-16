@@ -1,6 +1,7 @@
 import type { GeneratedSection } from "@/types";
 import { type BrandTokens, DEFAULT_BRAND_TOKENS } from "./brand-tokens";
 import { getTheme, DEFAULT_THEME_ID, type StyleTheme, type ThemeId } from "./style-themes";
+import { baseAnimationCss, baseAnimationJs } from "./animations";
 
 const DEFAULT_BRAND = DEFAULT_BRAND_TOKENS;
 
@@ -98,10 +99,13 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
         }
         return String(i ?? "");
       });
+      const loop = [...items, ...items];
       return `
-        <section style="background:${alpha(brand.primary, 0.04)};border-top:1px solid ${alpha(txt, 0.1)};border-bottom:1px solid ${alpha(txt, 0.1)};padding:22px 24px;font-family:${theme.fontBody};">
-          <div style="display:flex;flex-wrap:wrap;gap:28px;justify-content:center;font-size:14px;color:${txt};font-weight:500;">
-            ${items.map((i) => `<span>${esc(i)}</span>`).join("")}
+        <section style="background:${alpha(brand.primary, 0.04)};border-top:1px solid ${alpha(txt, 0.1)};border-bottom:1px solid ${alpha(txt, 0.1)};padding:20px 0;font-family:${theme.fontBody};">
+          <div class="bv-marquee">
+            <div class="bv-marquee-track">
+              ${loop.map((i) => `<span class="bv-marquee-item" style="font-size:14px;color:${txt};font-weight:500;">${esc(i)}</span>`).join("")}
+            </div>
           </div>
         </section>`;
     }
@@ -109,7 +113,7 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
     case "social-proof":
       return `
         <section style="padding:${theme.sectionPadding};text-align:center;font-family:${theme.fontBody};">
-          <p style="font-size:30px;margin:0 0 10px;color:${brand.accent};letter-spacing:0.1em;">★★★★★</p>
+          <p class="bv-stars" style="font-size:30px;margin:0 0 10px;color:${brand.accent};">★★★★★</p>
           <h2 style="font-size:30px;margin:0 0 12px;color:${txt};${heading(ctx)}">${esc(c.headline ?? "+2.000 clientes felices")}</h2>
           <p style="color:${alpha(txt, 0.65)};margin:0;font-size:16px;">${esc(c.subheadline ?? "Calificación promedio 4.8/5 en más de 600 reviews verificadas.")}</p>
         </section>`;
@@ -129,15 +133,15 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
             ${products
               .map(
                 (p) => `
-              <div class="bv-card" style="${cardStyle(ctx)};overflow:hidden;">
-                <div style="background:${alpha(brand.accent, 0.12)};height:190px;position:relative;display:flex;align-items:center;justify-content:center;">
-                  ${p.badge ? `<span style="position:absolute;top:12px;left:12px;padding:5px 11px;font-size:11px;font-weight:700;border-radius:${theme.buttonRadius};font-family:${theme.fontBody};${theme.badgeStyle(brand)}">${esc(p.badge)}</span>` : ""}
+              <div class="bv-card bv-product" style="${cardStyle(ctx)};">
+                <div class="bv-product-img" style="background:${alpha(brand.accent, 0.12)};height:190px;position:relative;display:flex;align-items:center;justify-content:center;">
+                  ${p.badge ? `<span style="position:absolute;top:12px;left:12px;z-index:2;padding:5px 11px;font-size:11px;font-weight:700;border-radius:${theme.buttonRadius};font-family:${theme.fontBody};${theme.badgeStyle(brand)}">${esc(p.badge)}</span>` : ""}
                   <span style="color:${alpha(txt, 0.25)};font-size:13px;">Imagen del producto</span>
                 </div>
                 <div style="padding:16px;">
                   <p style="margin:0 0 8px;font-size:14px;color:${txt};">${esc(p.name)}</p>
                   <p style="margin:0 0 14px;font-weight:700;color:${txt};">${esc(p.price)} ${p.oldPrice ? `<span style="text-decoration:line-through;color:${alpha(txt, 0.4)};font-weight:400;font-size:13px;">${esc(p.oldPrice)}</span>` : ""}</p>
-                  <a href="#" class="bv-btn" style="display:block;text-align:center;padding:11px;border-radius:${theme.buttonRadius};font-size:13px;font-weight:600;text-decoration:none;font-family:${theme.fontBody};transition:all 0.25s;${theme.buttonStyle(brand)}">Agregar al carrito</a>
+                  <a href="#" class="bv-btn bv-product-cta" style="display:block;text-align:center;padding:11px;border-radius:${theme.buttonRadius};font-size:13px;font-weight:600;text-decoration:none;font-family:${theme.fontBody};${theme.buttonStyle(brand)}">Agregar al carrito</a>
                 </div>
               </div>`
               )
@@ -205,9 +209,12 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
             ${faqs
               .map(
                 (f) => `
-              <div style="border-bottom:1px solid ${alpha(txt, 0.12)};padding:20px 0;">
-                <p style="margin:0 0 7px;font-weight:700;color:${txt};font-size:16px;">${esc(f.q)}</p>
-                <p style="margin:0;color:${alpha(txt, 0.65)};font-size:15px;line-height:1.5;">${esc(f.a)}</p>
+              <div class="bv-faq-item" style="border-bottom:1px solid ${alpha(txt, 0.12)};padding:20px 0;">
+                <div class="bv-faq-q">
+                  <p style="margin:0;font-weight:700;color:${txt};font-size:16px;">${esc(f.q)}</p>
+                  <span class="bv-faq-icon" style="color:${brand.accent};">+</span>
+                </div>
+                <div class="bv-faq-a"><p style="margin:0;color:${alpha(txt, 0.65)};font-size:15px;line-height:1.5;">${esc(f.a)}</p></div>
               </div>`
               )
               .join("")}
@@ -251,9 +258,14 @@ export function renderPage(
   const theme = getTheme(themeId);
   const ctx: Ctx = { brand, theme };
 
+  const noReveal = new Set(["announcement-bar", "urgency-banner"]);
   const body = sections
     .filter((s) => s.status === "ready")
-    .map((s) => renderSection(s, ctx))
+    .map((s) => {
+      const html = renderSection(s, ctx);
+      if (noReveal.has(s.sectionId)) return html;
+      return `<div class="bv-reveal">${html}</div>`;
+    })
     .join("\n");
 
   return `<!DOCTYPE html>
@@ -278,9 +290,10 @@ export function renderPage(
     min-height: 100%;
   }
   .bv-btn:hover { ${theme.buttonHover} }
+  ${baseAnimationCss(theme, brand)}
   ${theme.globalCss}
 </style>
 </head>
-<body>${body}</body>
+<body>${body}${baseAnimationJs()}</body>
 </html>`;
 }

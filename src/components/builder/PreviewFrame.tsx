@@ -32,7 +32,7 @@ export function PreviewFrame({
         <iframe
           srcDoc={html}
           title="Live preview"
-          sandbox="allow-same-origin"
+          sandbox="allow-same-origin allow-scripts"
           className={cn(
             "h-full rounded-lg border border-border bg-white transition-all duration-500",
             mode === "mobile" ? "w-[390px]" : "w-full"
