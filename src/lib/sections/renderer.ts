@@ -32,6 +32,62 @@ function alpha(hex: string, a: number): string {
   return `rgba(${r},${g},${b},${a})`;
 }
 
+/**
+ * Claude suele mandar nombres de íconos de Lucide (truck, shield-check…) como
+ * "icon". Los traducimos a emojis para que el trust strip muestre algo visual.
+ * Si ya viene un emoji (o un ✓), lo dejamos como está.
+ */
+const ICON_EMOJI: Record<string, string> = {
+  truck: "🚚",
+  "shield-check": "🛡️",
+  shield: "🛡️",
+  "credit-card": "💳",
+  card: "💳",
+  "refresh-cw": "🔄",
+  refresh: "🔄",
+  "rotate-ccw": "🔄",
+  lock: "🔒",
+  "lock-keyhole": "🔒",
+  check: "✓",
+  "check-circle": "✅",
+  "badge-check": "✅",
+  star: "⭐",
+  heart: "❤️",
+  gift: "🎁",
+  package: "📦",
+  box: "📦",
+  clock: "⏱️",
+  timer: "⏱️",
+  zap: "⚡",
+  award: "🏆",
+  medal: "🏅",
+  "thumbs-up": "👍",
+  phone: "📱",
+  headphones: "🎧",
+  "map-pin": "📍",
+  globe: "🌎",
+  leaf: "🌿",
+  sparkles: "✨",
+  tag: "🏷️",
+  percent: "💰",
+  "dollar-sign": "💵",
+  wallet: "👛",
+  "message-circle": "💬",
+  users: "👥",
+  "user-check": "✅",
+  "calendar-check": "📅",
+  "rotate-cw": "🔄",
+};
+
+function iconToEmoji(raw: string): string {
+  if (!raw) return "";
+  // Si ya es un emoji o símbolo no-ASCII (✓, 🚚…), devolverlo tal cual
+  // eslint-disable-next-line no-control-regex
+  if (/[^\u0000-\u007F]/.test(raw)) return raw;
+  const key = raw.toLowerCase().trim().replace(/_/g, "-");
+  return ICON_EMOJI[key] ?? "✓";
+}
+
 interface Ctx {
   brand: BrandTokens;
   theme: StyleTheme;
@@ -58,8 +114,19 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
   const txt = theme.bodyColor(brand);
 
   switch (section.sectionId) {
-    case "announcement-bar":
-      return `<div style="background:${brand.primary};color:#fff;text-align:center;padding:11px 16px;font-size:13px;letter-spacing:0.06em;font-family:${theme.fontBody};">${esc(c.text ?? "Envío gratis a todo el país 🚚")}</div>`;
+    case "announcement-bar": {
+      // Claude puede mandar un texto o varios (messages/items) → rotador
+      const raw =
+        (c.messages as unknown[] | undefined) ??
+        (c.items as unknown[] | undefined) ??
+        (c.text !== undefined ? [c.text] : ["Envío gratis a todo el país 🚚"]);
+      const msgs = (Array.isArray(raw) ? raw : [raw]).map((m) => esc(m));
+      const inner =
+        msgs.length > 1
+          ? `<span class="bv-rotator">${msgs.map((m) => `<span>${m}</span>`).join("")}</span>`
+          : msgs[0];
+      return `<div style="background:${brand.primary};color:#fff;text-align:center;padding:11px 16px;font-size:13px;letter-spacing:0.06em;font-family:${theme.fontBody};">${inner}</div>`;
+    }
 
     case "hero-primary":
       return `
@@ -94,8 +161,9 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
         if (i && typeof i === "object") {
           const obj = i as Record<string, unknown>;
           const t = obj.text ?? obj.label ?? obj.name ?? obj.value ?? "";
-          const icon = obj.icon ?? obj.emoji ?? "";
-          return icon ? `${icon} ${t}` : String(t);
+          const rawIcon = String(obj.icon ?? obj.emoji ?? "");
+          const icon = iconToEmoji(rawIcon);
+          return icon ? `${icon}\u00A0\u00A0${t}` : String(t);
         }
         return String(i ?? "");
       });
@@ -129,7 +197,7 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
       return `
         <section style="padding:${theme.sectionPadding};font-family:${theme.fontBody};">
           <h2 style="text-align:center;font-size:32px;margin:0 0 40px;color:${txt};${heading(ctx)}">${esc(c.headline ?? "Los más vendidos")}</h2>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:22px;max-width:1040px;margin:0 auto;">
+          <div class="bv-pgrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:22px;max-width:1040px;margin:0 auto;">
             ${products
               .map(
                 (p) => `
@@ -170,18 +238,22 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
         return { name: "Cliente", quote: String(t ?? "") };
       });
       return `
-        <section style="padding:${theme.sectionPadding};font-family:${theme.fontBody};">
+        <section style="padding:${theme.sectionPadding};font-family:${theme.fontBody};color:${txt};">
           <h2 style="text-align:center;font-size:32px;margin:0 0 40px;color:${txt};${heading(ctx)}">${esc(c.headline ?? "Lo que dicen nuestros clientes")}</h2>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px;max-width:960px;margin:0 auto;">
-            ${testimonials
-              .map(
-                (t) => `
-              <div class="bv-card" style="${cardStyle(ctx)};padding:26px;">
-                <p style="margin:0 0 16px;font-size:15px;color:${txt};line-height:1.55;">"${esc(t.quote)}"</p>
-                <p style="margin:0;font-size:13px;font-weight:700;color:${txt};">${esc(t.name)}</p>
-              </div>`
-              )
-              .join("")}
+          <div style="max-width:1000px;margin:0 auto;">
+            <div class="bv-carousel">
+              ${testimonials
+                .map(
+                  (t) => `
+                <div class="bv-card" style="${cardStyle(ctx)};padding:28px;width:300px;max-width:80vw;">
+                  <p style="margin:0 0 14px;color:${brand.accent};font-size:18px;letter-spacing:0.1em;">★★★★★</p>
+                  <p style="margin:0 0 16px;font-size:15px;color:${txt};line-height:1.55;">"${esc(t.quote)}"</p>
+                  <p style="margin:0;font-size:13px;font-weight:700;color:${txt};">${esc(t.name)}</p>
+                </div>`
+                )
+                .join("")}
+            </div>
+            ${testimonials.length > 1 ? `<div class="bv-carousel-nav" style="color:${txt};">${testimonials.map((_, i) => `<button class="bv-dot${i === 0 ? " bv-active" : ""}" aria-label="Ir al testimonio ${i + 1}"></button>`).join("")}</div>` : ""}
           </div>
         </section>`;
     }

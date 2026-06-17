@@ -52,6 +52,35 @@ export function baseAnimationCss(theme: StyleTheme, brand: BrandTokens): string 
   .bv-faq-item.bv-open .bv-faq-icon { transform: rotate(45deg); }
   .bv-faq-a { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.3s, margin-top 0.3s; margin-top: 0; }
   .bv-faq-item.bv-open .bv-faq-a { max-height: 240px; opacity: 1; margin-top: 10px; }
+
+  /* ── Carrusel (testimonios / productos) ──────── */
+  .bv-carousel { display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 6px 4px 14px; cursor: grab; }
+  .bv-carousel::-webkit-scrollbar { display: none; }
+  .bv-carousel.bv-dragging { cursor: grabbing; scroll-snap-type: none; }
+  .bv-carousel > * { scroll-snap-align: start; flex: 0 0 auto; }
+  .bv-carousel-nav { display: flex; gap: 8px; justify-content: center; margin-top: 18px; }
+  .bv-dot { width: 8px; height: 8px; border-radius: 999px; border: none; background: currentColor; opacity: 0.25; cursor: pointer; transition: opacity 0.3s, width 0.3s; }
+  .bv-dot.bv-active { opacity: 0.9; width: 22px; }
+
+  /* ── Announcement rotativo ───────────────────── */
+  .bv-rotator { position: relative; display: inline-flex; height: 1.3em; overflow: hidden; vertical-align: bottom; }
+  .bv-rotator > span { position: absolute; left: 50%; transform: translateX(-50%) translateY(100%); opacity: 0; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.5s; white-space: nowrap; }
+  .bv-rotator > span.bv-rot-active { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .bv-rotator > span.bv-rot-out { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+
+  /* ── Productos: carrusel horizontal en mobile ── */
+  @media (max-width: 640px) {
+    .bv-pgrid {
+      display: flex !important;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 10px;
+    }
+    .bv-pgrid::-webkit-scrollbar { display: none; }
+    .bv-pgrid > * { scroll-snap-align: start; flex: 0 0 72%; }
+  }
   `;
 }
 
@@ -87,6 +116,66 @@ export function baseAnimationJs(): string {
         if (parent) parent.querySelectorAll('.bv-faq-item.bv-open').forEach(function (o) { o.classList.remove('bv-open'); });
         if (!wasOpen) item.classList.add('bv-open');
       });
+    });
+
+    // Carrusel: drag-to-scroll + dots
+    document.querySelectorAll('.bv-carousel').forEach(function (track) {
+      var down = false, startX = 0, startScroll = 0, moved = false;
+      track.addEventListener('pointerdown', function (e) {
+        down = true; moved = false; startX = e.clientX; startScroll = track.scrollLeft;
+        track.classList.add('bv-dragging');
+      });
+      window.addEventListener('pointerup', function () {
+        down = false; track.classList.remove('bv-dragging');
+      });
+      track.addEventListener('pointermove', function (e) {
+        if (!down) return;
+        var dx = e.clientX - startX;
+        if (Math.abs(dx) > 4) moved = true;
+        track.scrollLeft = startScroll - dx;
+      });
+      // Evitar que un click tras drag dispare navegación
+      track.querySelectorAll('a').forEach(function (a) {
+        a.addEventListener('click', function (e) { if (moved) e.preventDefault(); });
+      });
+
+      // Dots
+      var nav = track.parentElement.querySelector('.bv-carousel-nav');
+      if (nav) {
+        var dots = nav.querySelectorAll('.bv-dot');
+        var sync = function () {
+          var items = track.children;
+          if (!items.length) return;
+          var w = items[0].getBoundingClientRect().width + 22;
+          var idx = Math.round(track.scrollLeft / w);
+          dots.forEach(function (d, i) { d.classList.toggle('bv-active', i === idx); });
+        };
+        track.addEventListener('scroll', sync);
+        dots.forEach(function (d, i) {
+          d.addEventListener('click', function () {
+            var items = track.children;
+            if (items[i]) items[i].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+          });
+        });
+        sync();
+      }
+    });
+
+    // Announcement rotativo
+    document.querySelectorAll('.bv-rotator').forEach(function (rot) {
+      var spans = rot.querySelectorAll('span');
+      if (spans.length < 2) return;
+      var cur = 0;
+      spans[0].classList.add('bv-rot-active');
+      setInterval(function () {
+        var prev = cur;
+        cur = (cur + 1) % spans.length;
+        spans[prev].classList.remove('bv-rot-active');
+        spans[prev].classList.add('bv-rot-out');
+        spans[cur].classList.remove('bv-rot-out');
+        spans[cur].classList.add('bv-rot-active');
+        setTimeout(function () { spans[prev].classList.remove('bv-rot-out'); }, 520);
+      }, 3200);
     });
   })();
   </script>
