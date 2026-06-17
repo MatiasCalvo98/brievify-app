@@ -252,6 +252,24 @@ export function useBuilder() {
       .catch(() => {});
   }, []);
 
+  // Reordenar secciones localmente (drag and drop) — no pasa por Claude
+  const reorderSections = useCallback((from: number, to: number) => {
+    setSections((prev) => {
+      if (from < 0 || from >= prev.length || to < 0 || to >= prev.length) {
+        return prev;
+      }
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }, []);
+
+  // Eliminar una sección del preview
+  const removeSection = useCallback((id: string) => {
+    setSections((prev) => prev.filter((s) => s.id !== id));
+  }, []);
+
   return {
     messages,
     sections,
@@ -260,5 +278,7 @@ export function useBuilder() {
     discardChanges,
     saveDraft,
     saveState,
+    reorderSections,
+    removeSection,
   };
 }

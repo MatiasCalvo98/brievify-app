@@ -11,12 +11,13 @@ import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { LivePreview } from "@/components/builder/LivePreview";
 import { SectionCatalog } from "@/components/builder/SectionCatalog";
+import { SectionLayers } from "@/components/builder/SectionLayers";
 import { Button } from "@/components/ui/Button";
 import type { SectionDefinition } from "@/types";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { messages, sections, isBuilding, sendMessage, discardChanges, saveDraft, saveState } =
+  const { messages, sections, isBuilding, sendMessage, discardChanges, saveDraft, saveState, reorderSections, removeSection } =
     useBuilder();
   const { brandKit, isLoading } = useBrandKit();
   const brandTokens = brandKitToTokens(brandKit);
@@ -103,6 +104,13 @@ export default function DashboardPage() {
             <ChatMessage key={message.id} message={message} />
           ))}
         </div>
+
+        <SectionLayers
+          sections={sections}
+          onReorder={reorderSections}
+          onRemove={removeSection}
+          disabled={isBuilding}
+        />
 
         <div className="border-t border-border p-3">
           <ChatInput onSend={sendMessage} disabled={isBuilding} />
