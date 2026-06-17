@@ -43,11 +43,20 @@ export type SectionId =
   | "announcement-bar"
   | "collection-banner";
 
+export type SectionCategory =
+  | "hero"
+  | "confianza"
+  | "productos"
+  | "urgencia"
+  | "contenido"
+  | "cierre";
+
 export interface SectionDefinition {
   id: SectionId;
   name: string;
   croBuiltIn: string;
   usage: string;
+  category: SectionCategory;
 }
 
 export interface GeneratedSection {

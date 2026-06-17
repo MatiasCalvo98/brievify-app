@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, LayoutGrid } from "lucide-react";
 import { useBuilder } from "@/hooks/useBuilder";
 import { useBrandKit } from "@/hooks/useBrandKit";
 import { brandKitToTokens } from "@/lib/sections/brand-tokens";
@@ -10,7 +10,9 @@ import { visualStyleToThemeId, type ThemeId } from "@/lib/sections/style-themes"
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { LivePreview } from "@/components/builder/LivePreview";
+import { SectionCatalog } from "@/components/builder/SectionCatalog";
 import { Button } from "@/components/ui/Button";
+import type { SectionDefinition } from "@/types";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -22,6 +24,14 @@ export default function DashboardPage() {
 
   // Tema visual del builder, inicializado desde el brand kit
   const [themeId, setThemeId] = useState<ThemeId | null>(null);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+
+  const handleAddSection = (section: SectionDefinition) => {
+    setCatalogOpen(false);
+    sendMessage(
+      `Agregá una sección "${section.name}" a mi página, con el contenido adaptado a mi marca.`
+    );
+  };
   useEffect(() => {
     if (brandKit && themeId === null) {
       setThemeId(visualStyleToThemeId(brandKit.visualStyle));
@@ -54,11 +64,26 @@ export default function DashboardPage() {
   return (
     <div className="flex h-full">
       {/* Chat — 40% */}
-      <div className="flex w-full flex-col border-r border-border lg:w-2/5">
+      <div className="relative flex w-full flex-col border-r border-border lg:w-2/5">
+        <SectionCatalog
+          open={catalogOpen}
+          onClose={() => setCatalogOpen(false)}
+          onAdd={handleAddSection}
+          disabled={isBuilding}
+        />
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-          <p className="font-heading text-xs font-semibold uppercase tracking-[0.2em] text-text-2">
-            Builder
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="font-heading text-xs font-semibold uppercase tracking-[0.2em] text-text-2">
+              Builder
+            </p>
+            <button
+              onClick={() => setCatalogOpen(true)}
+              className="flex items-center gap-1.5 rounded-md border border-border bg-surface-2 px-2 py-1 text-[11px] font-semibold text-text-2 transition-colors hover:border-lime/30 hover:text-text"
+            >
+              <LayoutGrid size={12} />
+              Secciones
+            </button>
+          </div>
           <Button
             variant="ghost"
             size="sm"
