@@ -156,18 +156,28 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
         "✓ Pago seguro",
         "✓ Cuotas sin interés",
       ];
-      const items = rawItems.map((i) => {
-        if (typeof i === "string") return i;
-        if (i && typeof i === "object") {
-          const obj = i as Record<string, unknown>;
-          const t = obj.text ?? obj.label ?? obj.name ?? obj.value ?? "";
-          const rawIcon = String(obj.icon ?? obj.emoji ?? "");
-          const icon = iconToEmoji(rawIcon);
-          return icon ? `${icon}\u00A0\u00A0${t}` : String(t);
-        }
-        return String(i ?? "");
-      });
-      const loop = [...items, ...items];
+      const items = rawItems
+        .map((i) => {
+          if (typeof i === "string") return i.trim();
+          if (i && typeof i === "object") {
+            const obj = i as Record<string, unknown>;
+            const t = String(obj.text ?? obj.label ?? obj.title ?? obj.value ?? "").trim();
+            if (!t) return ""; // sin texto no sirve
+            const rawIcon = String(obj.icon ?? obj.emoji ?? "");
+            const icon = iconToEmoji(rawIcon);
+            return `${icon}\u00A0\u00A0${t}`;
+          }
+          return String(i ?? "").trim();
+        })
+        .filter((s) => s.length > 0);
+
+      // Si quedó vacío o casi, usar defaults para no mostrar una barra pobre
+      const finalItems =
+        items.length >= 2
+          ? items
+          : ["🚚\u00A0\u00A0Envío gratis", "💳\u00A0\u00A0Cuotas sin interés", "🛡️\u00A0\u00A0Compra protegida", "🔄\u00A0\u00A0Cambios sin costo"];
+
+      const loop = [...finalItems, ...finalItems];
       return `
         <section style="background:${alpha(brand.primary, 0.04)};border-top:1px solid ${alpha(txt, 0.1)};border-bottom:1px solid ${alpha(txt, 0.1)};padding:20px 0;font-family:${theme.fontBody};">
           <div class="bv-marquee">

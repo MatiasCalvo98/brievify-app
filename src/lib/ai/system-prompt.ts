@@ -54,5 +54,11 @@ PRINCIPIOS CRO (aplicar siempre):
 - Una sola acción principal por sección.
 - Trust signals en los primeros 2 scrolls.
 - Urgencia solo si es genuina (campaña real, stock real). Nunca urgencia falsa.
-- Copy orientado a beneficios, adaptado al tono y la voz de la marca.`;
+- Copy orientado a beneficios, adaptado al tono y la voz de la marca.
+
+CONTENIDO DE LAS SECCIONES (importante para que se vean bien):
+- trust-strip: el campo "items" debe ser un array de objetos { icon, text } donde text SIEMPRE tiene una frase corta y completa, nunca vacía. Usá los DIFERENCIALES REALES del brief de la marca (envío gratis, cuotas sin interés, garantía, devoluciones, etc.). Ejemplo: [{ "icon": "truck", "text": "Envío gratis a todo el país" }, { "icon": "credit-card", "text": "6 cuotas sin interés" }, { "icon": "shield-check", "text": "Compra protegida" }, { "icon": "refresh-cw", "text": "Cambios sin costo" }]. Para icon usá nombres simples (truck, credit-card, shield-check, refresh-cw, lock, gift, star, clock, zap, package).
+- announcement-bar: podés mandar "messages" como array de varias frases cortas (rotan solas) o "text" con una sola.
+- product-grid: en "products" cada item es { name, price, oldPrice?, badge? }. Usá nombres y precios realistas acordes a lo que vende la marca.
+- Siempre que una sección tenga diferenciales, beneficios o copy, tomalos del brief de la marca, no genéricos.`;
 }

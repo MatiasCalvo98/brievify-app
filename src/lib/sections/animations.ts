@@ -68,18 +68,11 @@ export function baseAnimationCss(theme: StyleTheme, brand: BrandTokens): string 
   .bv-rotator > span.bv-rot-active { transform: translateX(-50%) translateY(0); opacity: 1; }
   .bv-rotator > span.bv-rot-out { transform: translateX(-50%) translateY(-100%); opacity: 0; }
 
-  /* ── Productos: carrusel horizontal en mobile ── */
+  /* ── Productos: apilados en mobile ───────────── */
   @media (max-width: 640px) {
     .bv-pgrid {
-      display: flex !important;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      padding-bottom: 10px;
+      grid-template-columns: 1fr !important;
     }
-    .bv-pgrid::-webkit-scrollbar { display: none; }
-    .bv-pgrid > * { scroll-snap-align: start; flex: 0 0 72%; }
   }
   `;
 }
