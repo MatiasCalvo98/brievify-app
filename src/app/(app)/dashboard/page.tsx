@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, LayoutGrid } from "lucide-react";
 import { useBuilder } from "@/hooks/useBuilder";
 import { useBrandKit } from "@/hooks/useBrandKit";
+import { useShopify } from "@/hooks/useShopify";
 import { brandKitToTokens } from "@/lib/sections/brand-tokens";
 import { visualStyleToThemeId, type ThemeId } from "@/lib/sections/style-themes";
 import { ChatMessage } from "@/components/chat/ChatMessage";
@@ -12,6 +13,7 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { LivePreview } from "@/components/builder/LivePreview";
 import { SectionCatalog } from "@/components/builder/SectionCatalog";
 import { SectionLayers } from "@/components/builder/SectionLayers";
+import { ConnectShopify } from "@/components/builder/ConnectShopify";
 import { Button } from "@/components/ui/Button";
 import type { SectionDefinition } from "@/types";
 
@@ -20,12 +22,26 @@ export default function DashboardPage() {
   const { messages, sections, isBuilding, sendMessage, discardChanges, saveDraft, saveState, reorderSections, removeSection } =
     useBuilder();
   const { brandKit, isLoading } = useBrandKit();
+  const { products: shopifyProducts } = useShopify();
   const brandTokens = brandKitToTokens(brandKit);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Tema visual del builder, inicializado desde el brand kit
   const [themeId, setThemeId] = useState<ThemeId | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [showConnectShopify, setShowConnectShopify] = useState(false);
+
+  // Manejar query params de Shopify (?connect / ?shopify=connected)
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("connect") === "shopify") {
+      setShowConnectShopify(true);
+      window.history.replaceState({}, "", "/dashboard");
+    }
+    if (sp.get("shopify") === "connected") {
+      window.history.replaceState({}, "", "/dashboard");
+    }
+  }, []);
 
   const handleAddSection = (section: SectionDefinition) => {
     setCatalogOpen(false);
@@ -64,6 +80,19 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-full">
+      {showConnectShopify && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 backdrop-blur-sm p-4"
+          onClick={() => setShowConnectShopify(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-border bg-surface p-7"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ConnectShopify onClose={() => setShowConnectShopify(false)} />
+          </div>
+        </div>
+      )}
       {/* Chat — 40% */}
       <div className="relative flex w-full flex-col border-r border-border lg:w-2/5">
         <SectionCatalog
@@ -127,6 +156,7 @@ export default function DashboardPage() {
           onThemeChange={setThemeId}
           onSaveDraft={saveDraft}
           saveState={saveState}
+          products={shopifyProducts}
         />
       </div>
     </div>

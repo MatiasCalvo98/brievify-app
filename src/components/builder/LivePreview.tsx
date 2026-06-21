@@ -7,6 +7,7 @@ import { PreviewFrame } from "./PreviewFrame";
 import { ThemeSelector } from "./ThemeSelector";
 import type { BrandTokens } from "@/lib/sections/brand-tokens";
 import type { ThemeId } from "@/lib/sections/style-themes";
+import type { PreviewProduct } from "@/lib/sections/renderer";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ interface LivePreviewProps {
   onThemeChange: (id: ThemeId) => void;
   onSaveDraft?: () => void;
   saveState?: "idle" | "saving" | "saved";
+  products?: PreviewProduct[];
 }
 
 export function LivePreview({
@@ -29,6 +31,7 @@ export function LivePreview({
   onThemeChange,
   onSaveDraft,
   saveState = "idle",
+  products = [],
 }: LivePreviewProps) {
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
   const readyCount = sections.filter((s) => s.status === "ready").length;
@@ -79,6 +82,7 @@ export function LivePreview({
           mode={mode}
           brand={brand}
           themeId={themeId}
+          products={products}
         />
       </div>
 

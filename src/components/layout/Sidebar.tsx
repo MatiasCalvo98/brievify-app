@@ -13,6 +13,7 @@ import {
 import { Logo } from "@/components/brand/Logo";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useShopify } from "@/hooks/useShopify";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -58,10 +59,7 @@ export function Sidebar() {
       </nav>
 
       <div className="flex flex-col gap-y-3 border-t border-border p-4">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-text-2">Shopify</span>
-          <Badge variant="amber">Sin conectar</Badge>
-        </div>
+        <ShopifyStatusBadge />
         <div className="flex items-center justify-between">
           <span className="text-xs text-text-2">Plan Starter</span>
           <Button
@@ -89,5 +87,23 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
+  );
+}
+
+function ShopifyStatusBadge() {
+  const { connected, shop, isLoading } = useShopify();
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-xs text-text-2">Shopify</span>
+      {isLoading ? (
+        <span className="text-[10px] text-muted">…</span>
+      ) : connected ? (
+        <Badge variant="emerald" title={shop ?? undefined}>Conectada</Badge>
+      ) : (
+        <Link href="/dashboard?connect=shopify">
+          <Badge variant="amber" className="cursor-pointer hover:opacity-80">Conectar</Badge>
+        </Link>
+      )}
+    </div>
   );
 }

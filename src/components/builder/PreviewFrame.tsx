@@ -5,6 +5,7 @@ import type { GeneratedSection } from "@/types";
 import { renderPage } from "@/lib/sections/renderer";
 import { type BrandTokens, DEFAULT_BRAND_TOKENS } from "@/lib/sections/brand-tokens";
 import type { ThemeId } from "@/lib/sections/style-themes";
+import type { PreviewProduct } from "@/lib/sections/renderer";
 import { cn } from "@/lib/utils";
 
 interface PreviewFrameProps {
@@ -12,6 +13,7 @@ interface PreviewFrameProps {
   mode: "desktop" | "mobile";
   brand?: BrandTokens;
   themeId: ThemeId;
+  products?: PreviewProduct[];
 }
 
 export function PreviewFrame({
@@ -19,10 +21,11 @@ export function PreviewFrame({
   mode,
   brand = DEFAULT_BRAND_TOKENS,
   themeId,
+  products = [],
 }: PreviewFrameProps) {
   const html = useMemo(
-    () => renderPage(sections, brand, themeId),
-    [sections, brand, themeId]
+    () => renderPage(sections, brand, themeId, products),
+    [sections, brand, themeId, products]
   );
   const hasContent = sections.some((s) => s.status === "ready");
 

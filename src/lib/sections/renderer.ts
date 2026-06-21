@@ -91,6 +91,7 @@ function iconToEmoji(raw: string): string {
 interface Ctx {
   brand: BrandTokens;
   theme: StyleTheme;
+  shopifyProducts: PreviewProduct[];
 }
 
 function heading(ctx: Ctx, extra = ""): string {
@@ -197,13 +198,32 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
         </section>`;
 
     case "product-grid": {
-      const products =
-        (c.products as { name: string; price: string; oldPrice?: string; badge?: string }[] | undefined) ?? [
-          { name: "Producto destacado 1", price: "$24.999", oldPrice: "$32.999", badge: "-25%" },
-          { name: "Producto destacado 2", price: "$18.500", badge: "NUEVO" },
-          { name: "Producto destacado 3", price: "$29.999", oldPrice: "$39.999", badge: "-25%" },
-          { name: "Producto destacado 4", price: "$15.999" },
-        ];
+      // Prioridad: productos reales de Shopify > los que generó Claude > placeholders
+      const real = ctx.shopifyProducts;
+      type P = { name: string; price: string; oldPrice?: string; badge?: string; image?: string | null };
+      let products: P[];
+
+      if (real.length > 0) {
+        products = real.slice(0, 8).map((p) => {
+          const hasDiscount = p.compareAtPrice && p.price && Number(p.compareAtPrice) > Number(p.price);
+          return {
+            name: p.title,
+            price: p.price ? `$${p.price}` : "",
+            oldPrice: hasDiscount ? `$${p.compareAtPrice}` : undefined,
+            image: p.image,
+            badge: hasDiscount ? "OFERTA" : undefined,
+          };
+        });
+      } else {
+        products =
+          (c.products as P[] | undefined) ?? [
+            { name: "Producto destacado 1", price: "$24.999", oldPrice: "$32.999", badge: "-25%" },
+            { name: "Producto destacado 2", price: "$18.500", badge: "NUEVO" },
+            { name: "Producto destacado 3", price: "$29.999", oldPrice: "$39.999", badge: "-25%" },
+            { name: "Producto destacado 4", price: "$15.999" },
+          ];
+      }
+
       return `
         <section style="padding:${theme.sectionPadding};font-family:${theme.fontBody};">
           <h2 style="text-align:center;font-size:32px;margin:0 0 40px;color:${txt};${heading(ctx)}">${esc(c.headline ?? "Los más vendidos")}</h2>
@@ -212,9 +232,9 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
               .map(
                 (p) => `
               <div class="bv-card bv-product" style="${cardStyle(ctx)};">
-                <div class="bv-product-img" style="background:${alpha(brand.accent, 0.12)};height:190px;position:relative;display:flex;align-items:center;justify-content:center;">
+                <div class="bv-product-img" style="background:${p.image ? `#fff url('${esc(p.image)}') center/cover no-repeat` : alpha(brand.accent, 0.12)};height:190px;position:relative;display:flex;align-items:center;justify-content:center;">
                   ${p.badge ? `<span style="position:absolute;top:12px;left:12px;z-index:2;padding:5px 11px;font-size:11px;font-weight:700;border-radius:${theme.buttonRadius};font-family:${theme.fontBody};${theme.badgeStyle(brand)}">${esc(p.badge)}</span>` : ""}
-                  <span style="color:${alpha(txt, 0.25)};font-size:13px;">Imagen del producto</span>
+                  ${p.image ? "" : `<span style="color:${alpha(txt, 0.25)};font-size:13px;">Imagen del producto</span>`}
                 </div>
                 <div style="padding:16px;">
                   <p style="margin:0 0 8px;font-size:14px;color:${txt};">${esc(p.name)}</p>
@@ -332,13 +352,21 @@ function renderSection(section: GeneratedSection, ctx: Ctx): string {
   }
 }
 
+export interface PreviewProduct {
+  title: string;
+  image: string | null;
+  price: string | null;
+  compareAtPrice: string | null;
+}
+
 export function renderPage(
   sections: GeneratedSection[],
   brand: BrandTokens = DEFAULT_BRAND,
-  themeId: ThemeId = DEFAULT_THEME_ID
+  themeId: ThemeId = DEFAULT_THEME_ID,
+  shopifyProducts: PreviewProduct[] = []
 ): string {
   const theme = getTheme(themeId);
-  const ctx: Ctx = { brand, theme };
+  const ctx: Ctx = { brand, theme, shopifyProducts };
 
   const noReveal = new Set(["announcement-bar", "urgency-banner"]);
   const body = sections
