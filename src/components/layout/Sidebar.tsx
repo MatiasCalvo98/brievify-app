@@ -26,13 +26,14 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { connected, shop } = useShopify();
 
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-surface">
       <div className="border-b border-border px-5 py-4">
         <Logo href="/dashboard" />
         <p className="mt-2 truncate text-xs text-text-2">
-          mi-tienda.myshopify.com
+          {connected && shop ? shop : "Tienda sin conectar"}
         </p>
       </div>
 
@@ -100,9 +101,11 @@ function ShopifyStatusBadge() {
       ) : connected ? (
         <Badge variant="emerald" title={shop ?? undefined}>Conectada</Badge>
       ) : (
-        <Link href="/dashboard?connect=shopify">
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("brievify:connect-shopify"))}
+        >
           <Badge variant="amber" className="cursor-pointer hover:opacity-80">Conectar</Badge>
-        </Link>
+        </button>
       )}
     </div>
   );

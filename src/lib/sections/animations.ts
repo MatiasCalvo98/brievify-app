@@ -85,6 +85,12 @@ export function baseAnimationJs(): string {
   return `
   <script>
   (function () {
+    // Prevenir que los links naveguen DENTRO del preview (evita iframe anidado)
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a');
+      if (a) { e.preventDefault(); }
+    }, true);
+
     // Scroll reveal
     var revealEls = document.querySelectorAll('.bv-reveal');
     if ('IntersectionObserver' in window) {

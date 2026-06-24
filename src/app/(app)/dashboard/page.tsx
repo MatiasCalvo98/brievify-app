@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [showConnectShopify, setShowConnectShopify] = useState(false);
 
-  // Manejar query params de Shopify (?connect / ?shopify=connected)
+  // Manejar query params de Shopify (?connect / ?shopify=connected) y evento del sidebar
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
     if (sp.get("connect") === "shopify") {
@@ -41,6 +41,10 @@ export default function DashboardPage() {
     if (sp.get("shopify") === "connected") {
       window.history.replaceState({}, "", "/dashboard");
     }
+
+    const handler = () => setShowConnectShopify(true);
+    window.addEventListener("brievify:connect-shopify", handler);
+    return () => window.removeEventListener("brievify:connect-shopify", handler);
   }, []);
 
   const handleAddSection = (section: SectionDefinition) => {
